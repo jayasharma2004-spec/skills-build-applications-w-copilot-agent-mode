@@ -1,9 +1,13 @@
 import express from "express";
-import mongoose from "mongoose";
+import { connectDatabase } from "./config/database";
+import usersRouter from "./routes/users";
+import teamsRouter from "./routes/teams";
+import activitiesRouter from "./routes/activities";
+import leaderboardRouter from "./routes/leaderboard";
+import workoutsRouter from "./routes/workouts";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 8000;
-const MONGO_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/octofit";
 
 app.use(express.json());
 
@@ -12,19 +16,22 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", port: PORT, mongo: MONGO_URI });
+  res.json({ status: "ok", port: PORT });
 });
 
-mongoose.set("strictQuery", false);
-mongoose
-  .connect(MONGO_URI)
+app.use("/api/users", usersRouter);
+app.use("/api/teams", teamsRouter);
+app.use("/api/activities", activitiesRouter);
+app.use("/api/leaderboard", leaderboardRouter);
+app.use("/api/workouts", workoutsRouter);
+
+connectDatabase()
   .then(() => {
-    console.log("MongoDB connected");
     app.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.error("MongoDB connection error:", error);
+    console.error("Database connection error:", error);
     process.exit(1);
   });
