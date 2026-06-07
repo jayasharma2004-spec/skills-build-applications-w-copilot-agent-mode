@@ -21,7 +21,19 @@ async function seed() {
   await mongoose.disconnect();
 }
 
-if (require.main === module) {
+const isMainModule = (() => {
+  try {
+    // Compare the resolved file URL of the executed script to this module's URL
+    const invoked = process.argv[1];
+    if (!invoked) return false;
+    const invokedUrl = new URL(`file://${invoked}`).href;
+    return invokedUrl === import.meta.url;
+  } catch (err) {
+    return false;
+  }
+})();
+
+if (isMainModule) {
   seed()
     .then(() => process.exit(0))
     .catch((err) => {
